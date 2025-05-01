@@ -32,14 +32,14 @@ type mvalue =
   | MClosure of name * frame * environ (** Closure *)
 
 (**
-   There are two kinds of machine instructions.
+  There are two kinds of machine instructions.
 
-   The first kind manipules tha stack of machine values. These are
-   arithmetical operations, integer comparison, variable lookup,
-   placing constants onto the stack, and closure formation.
+  The first kind manipules tha stack of machine values. These are
+  arithmetical operations, integer comparison, variable lookup,
+  placing constants onto the stack, and closure formation.
 
-   The second kind are the control instructions. These are branching
-   instruction, execution of a closure, and popping of an environment.
+  The second kind are the control instructions. These are branching
+  instruction, execution of a closure, and popping of an environment.
 *)
 
 and instr =
@@ -47,6 +47,7 @@ and instr =
   | IAdd                            (** addition *)
   | ISub                            (** subtraction *)
   | IEqual                          (** equality *)
+  | IDivi                           (** division*)
   | ILess                           (** less than *)
   | IVar of name  		    (** push value of variable *)
   | IInt of int   		    (** push integer constant *)
@@ -106,6 +107,10 @@ let mult = function
   | (MInt x) :: (MInt y) :: s -> MInt (y * x) :: s
   | _ -> error "int and int expected in mult"
 
+let divi = function
+  | (MInt x) :: (MInt y) :: s -> MInt (y / x) :: s
+  | _ -> error "int and int are expected in divi"
+
 (** Addition *)
 let add = function
   | (MInt x) :: (MInt y) :: s -> MInt (y + x) :: s
@@ -133,6 +138,7 @@ let less = function
 let exec instr frms stck envs =
   match instr with
     (* Arithmetic *)
+    | IDivi  -> (frms, divi stck, envs)
     | IMult  -> (frms, mult stck, envs)
     | IAdd   -> (frms, add stck, envs)
     | ISub   -> (frms, sub stck, envs)
@@ -144,10 +150,10 @@ let exec instr frms stck envs =
     | IBool b -> (frms, (MBool b) :: stck, envs)
     | IClosure (f, x, frm) ->
 	(match envs with
-	     env :: _ ->
-	       let rec c = MClosure (x, frm, (f,c) :: env) in
-		 (frms, c :: stck, envs)
-	   | [] -> error "no environment for a closure")
+      env :: _ ->
+        let rec c = MClosure (x, frm, (f,c) :: env) in
+    (frms, c :: stck, envs)
+    | [] -> error "no environment for a closure")
     (* Control instructions *)
     | IBranch (f1, f2) ->
 	let (b, stck') = pop_bool stck in
@@ -157,8 +163,8 @@ let exec instr frms stck envs =
 	  (frm :: frms, stck', ((x,v) :: env) :: envs)
     | IPopEnv ->
 	(match envs with
-	     [] -> error "no environment to pop"
-	   | _ :: envs' -> (frms, stck, envs'))
+      [] -> error "no environment to pop"
+    | _ :: envs' -> (frms, stck, envs'))
 
 (** [run frm env] executes the frame [frm] in environment [env]. *)
 let run frm env =

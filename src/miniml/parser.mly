@@ -11,6 +11,7 @@
 %token PLUS
 %token MINUS
 %token TIMES
+%token DIVISION
 %token EQUAL LESS
 %token IF THEN ELSE
 %token FUN IS
@@ -63,12 +64,14 @@ plain_expr:
     { e }
   | MINUS n = INT
     { Int (-n) }
-  | e1 = expr PLUS e2 = expr	
+  | e1 = expr PLUS e2 = expr
     { Plus (e1, e2) }
   | e1 = expr MINUS e2 = expr
     { Minus (e1, e2) }
   | e1 = expr TIMES e2 = expr
     { Times (e1, e2) }
+  | e1 = expr DIVISION e2 = expr
+    { Division (e1, e2) }
   | e1 = expr EQUAL e2 = expr
     { Equal (e1, e2) }
   | e1 = expr LESS e2 = expr
@@ -89,14 +92,14 @@ simple_expr: mark_position(plain_simple_expr) { $1 }
 plain_simple_expr:
   | x = VAR
     { Var x }
-  | TRUE    
+  | TRUE
     { Bool true }
   | FALSE
     { Bool false }
   | n = INT
     { Int n }
-  | LPAREN e = plain_expr RPAREN	
-    { e }    
+  | LPAREN e = plain_expr RPAREN
+    { e }
 
 ty:
   | TBOOL
