@@ -17,7 +17,7 @@ rule token = parse
   | "if"            { IF }
   | "then"          { THEN }
   | "else"          { ELSE }
-  | "let"           { LET }  
+  | "let"           { LET }
   | ";;"            { SEMISEMI }
   | '='             { EQUAL }
   | '<'             { LESS }
@@ -28,6 +28,7 @@ rule token = parse
   | '+'             { PLUS }
   | '-'             { MINUS }
   | '*'             { TIMES }
+  | '/'             { DIVISION }
   | var             { VAR (Lexing.lexeme lexbuf) }
   | eof             { EOF }
 
