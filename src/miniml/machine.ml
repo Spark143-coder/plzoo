@@ -109,6 +109,7 @@ let mult = function
   | _ -> error "int and int expected in mult"
 
 let divi = function
+  | (MInt 0) :: (MInt _) :: _ -> error "Division_by_zero"
   | (MInt x) :: (MInt y) :: s -> MInt (y / x) :: s
   | _ -> error "int and int are expected in divi"
 
