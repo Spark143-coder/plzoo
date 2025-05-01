@@ -31,6 +31,7 @@ and type_of ctx {Zoo.data=e; loc} =
     | Minus (e1, e2) -> check ctx TInt e1 ; check ctx TInt e2 ; TInt
     | Equal (e1, e2) -> check ctx TInt e1 ; check ctx TInt e2 ; TBool
     | Less (e1, e2) -> check ctx TInt e1 ; check ctx TInt e2 ; TBool
+    | Try (e1, e2) -> let ty = type_of ctx e1 in check ctx ty e2; ty
     | If (e1, e2, e3) ->
       check ctx TBool e1 ;
       let ty = type_of ctx e2 in

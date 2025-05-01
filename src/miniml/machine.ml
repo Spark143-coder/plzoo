@@ -56,6 +56,7 @@ and instr =
   | IBranch of frame * frame        (** branch *)
   | ICall                           (** execute a closure *)
   | IPopEnv                         (** pop environment *)
+  | ITry of instr list * instr list                           (** Try and With*)
 
 (** A frame is a list (stack) of instructions *)
 and frame = instr list
@@ -135,36 +136,46 @@ let less = function
     given state [(frms, stck, envs)], where [frms] is a stack of frames,
     [stck] is a stack of machine values, and [envs] is a stack of
     environments. The return value is a new state. *)
-let exec instr frms stck envs =
-  match instr with
-    (* Arithmetic *)
-    | IDivi  -> (frms, divi stck, envs)
-    | IMult  -> (frms, mult stck, envs)
-    | IAdd   -> (frms, add stck, envs)
-    | ISub   -> (frms, sub stck, envs)
-    | IEqual -> (frms, equal stck, envs)
-    | ILess  -> (frms, less stck, envs)
-    (* Pushing values onto stack *)
-    | IVar x  -> (frms, (lookup x envs) :: stck, envs)
-    | IInt k  -> (frms, (MInt k) :: stck, envs)
-    | IBool b -> (frms, (MBool b) :: stck, envs)
-    | IClosure (f, x, frm) ->
-	(match envs with
-      env :: _ ->
-        let rec c = MClosure (x, frm, (f,c) :: env) in
-    (frms, c :: stck, envs)
-    | [] -> error "no environment for a closure")
-    (* Control instructions *)
-    | IBranch (f1, f2) ->
-	let (b, stck') = pop_bool stck in
-	  ((if b then f1 else f2) :: frms, stck', envs)
-    | ICall ->
-	let (x, frm, env, v, stck') = pop_app stck in
-	  (frm :: frms, stck', ((x,v) :: env) :: envs)
-    | IPopEnv ->
-	(match envs with
-      [] -> error "no environment to pop"
-    | _ :: envs' -> (frms, stck, envs'))
+    let rec exec_block block frms stck envs =
+      match block with
+      | [] -> (frms, stck, envs)
+      | instr :: rest ->
+          let (frms', stck', envs') = exec instr frms stck envs in
+          exec_block rest frms' stck' envs'
+    
+    and exec instr frms stck envs =
+      match instr with
+      | IDivi  -> (frms, divi stck, envs)
+      | IMult  -> (frms, mult stck, envs)
+      | IAdd   -> (frms, add stck, envs)
+      | ISub   -> (frms, sub stck, envs)
+      | IEqual -> (frms, equal stck, envs)
+      | ILess  -> (frms, less stck, envs)
+      | IVar x  -> (frms, (lookup x envs) :: stck, envs)
+      | IInt k  -> (frms, (MInt k) :: stck, envs)
+      | IBool b -> (frms, (MBool b) :: stck, envs)
+      | IClosure (f, x, frm) ->
+          (match envs with
+          | env :: _ ->
+              let rec c = MClosure (x, frm, (f, c) :: env) in
+              (frms, c :: stck, envs)
+          | [] -> error "no environment for a closure")
+      | IBranch (f1, f2) ->
+          let (b, stck') = pop_bool stck in
+          ((if b then f1 else f2) :: frms, stck', envs)
+      | ICall ->
+          let (x, frm, env, v, stck') = pop_app stck in
+          (frm :: frms, stck', ((x,v) :: env) :: envs)
+      | IPopEnv ->
+          (match envs with
+          | [] -> error "no environment to pop"
+          | _ :: envs' -> (frms, stck, envs'))
+      | ITry (try_block, handler_block) ->
+          (* Execute try_block; if exception, execute handler_block *)
+          (try
+            exec_block try_block frms stck envs
+          with Machine_error _ ->
+            exec_block handler_block frms stck envs)
 
 (** [run frm env] executes the frame [frm] in environment [env]. *)
 let run frm env =

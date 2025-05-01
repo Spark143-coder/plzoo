@@ -1,8 +1,8 @@
 (** Evaluation rules, small-step operational semantics.
 
-   This module is for demonstration purposes only. It is inefficient
-   and not used by the toplevel, which compiles programs to "machine"
-   language, see modules Machine and Compile.
+  This module is for demonstration purposes only. It is inefficient
+  and not used by the toplevel, which compiles programs to "machine"
+  language, see modules Machine and Compile.
 *)
 
 open Syntax
@@ -11,7 +11,7 @@ open Syntax
 let is_value = function
   | Int _ | Bool _ | Fun _ -> true
   | Var _ | Times _ | Plus _ | Minus _
-  | Equal _ | Less _ | If _ | Apply _ -> false
+  | Equal _ | Less _ | If _ | Apply _ | Division _ -> false
 
 (** An exception indicating a value. *)
 exception Value
@@ -33,6 +33,9 @@ let rec eval1 = function
   | Minus (Int k1, Int k2) -> Int (k1 - k2)
   | Minus (Int k1, e2)     -> Minus (Int k1, eval1 e2)
   | Minus (e1, e2)         -> Minus (eval1 e1, e2)
+  | Division (Int k1, Int k2) -> Int(k1 / k2)
+  | Division (Int k1, e2) -> Division (Int k1, eval1 e2)
+  | Division (e1, e2) -> Division (eval1 e1, eval1 e2)
   | Equal (Int k1, Int k2) -> Bool (k1 = k2)
   | Equal (Int k1, e2)     -> Equal (Int k1, eval1 e2)
   | Equal (e1, e2)         -> Equal (eval1 e1, e2)

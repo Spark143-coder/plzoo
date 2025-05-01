@@ -18,6 +18,8 @@ rule token = parse
   | "then"          { THEN }
   | "else"          { ELSE }
   | "let"           { LET }
+  | "try"           { TRY }
+  | "with"          { WITH }
   | ";;"            { SEMISEMI }
   | '='             { EQUAL }
   | '<'             { LESS }
