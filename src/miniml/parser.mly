@@ -22,6 +22,10 @@
 %token EOF
 %token TRY
 %token WITH
+%token LBRACE
+%token RBRACE
+%token DIVISION_BY_ZERO
+%token BAR
 
 %start file
 %type <Syntax.command list> file
@@ -80,6 +84,8 @@ plain_expr:
     { Less (e1, e2) }
   | TRY e1 = expr WITH e2 = expr
     { Try (e1, e2) }
+  | TRY LBRACE e1 = expr RBRACE WITH LBRACE BAR DIVISION_BY_ZERO TARROW e2 = expr RBRACE
+    { TryWith (e1, [DivisionByZero, e2]) }
   | IF e1 = expr THEN e2 = expr ELSE e3 = expr
     { If (e1, e2, e3) }
   | FUN x = VAR LPAREN f = VAR COLON t1 = ty RPAREN COLON t2 = ty IS e = expr

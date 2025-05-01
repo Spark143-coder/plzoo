@@ -32,6 +32,8 @@ and type_of ctx {Zoo.data=e; loc} =
     | Equal (e1, e2) -> check ctx TInt e1 ; check ctx TInt e2 ; TBool
     | Less (e1, e2) -> check ctx TInt e1 ; check ctx TInt e2 ; TBool
     | Try (e1, e2) -> let ty = type_of ctx e1 in check ctx ty e2; ty
+    | TryWith (e1,[(_,e2)]) -> let ty = type_of ctx e1 in check ctx ty e2;ty
+    | TryWith (_, _) -> typing_error ~loc "Only a single exception handler is supported currently"
     | If (e1, e2, e3) ->
       check ctx TBool e1 ;
       let ty = type_of ctx e2 in

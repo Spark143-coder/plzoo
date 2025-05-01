@@ -20,6 +20,10 @@ rule token = parse
   | "let"           { LET }
   | "try"           { TRY }
   | "with"          { WITH }
+  | "{"             { LBRACE }
+  | "}"             { RBRACE }
+  | "DivisionByZero"{ DIVISION_BY_ZERO }
+  | "|"             { BAR }
   | ";;"            { SEMISEMI }
   | '='             { EQUAL }
   | '<'             { LESS }

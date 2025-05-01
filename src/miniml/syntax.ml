@@ -9,6 +9,9 @@ type ty =
   | TBool             (* Booleans *)
   | TArrow of ty * ty (* Functions *)
 
+type exn_name=
+  | DivisionByZero
+
 (* Expressions *)
 type expr = expr' Zoo.located
 and expr' =
@@ -25,6 +28,7 @@ and expr' =
   | Fun of name * name * ty * ty * expr (* Function [fun f(x:s):t is e] *)
   | Apply of expr * expr 		(* Application [e1 e2] *)
   | Try of expr * expr      (* Try e1 With e2*)
+  | TryWith of expr * (exn_name * expr) list
 
 (* Toplevel commands *)
 type command =

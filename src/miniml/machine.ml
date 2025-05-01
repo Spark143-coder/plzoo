@@ -24,6 +24,7 @@
 (** The datatype of variable names. A more efficient implementation
     would use de Bruijn indices but we want to keep things simple. *)
 type name = Syntax.name
+type exn_name = Syntax.exn_name
 
 (** Machine values. *)
 type mvalue =
@@ -56,7 +57,8 @@ and instr =
   | IBranch of frame * frame        (** branch *)
   | ICall                           (** execute a closure *)
   | IPopEnv                         (** pop environment *)
-  | ITry of instr list * instr list                           (** Try and With*)
+  | ITry of instr list * instr list (** Try and With*)
+  | ITryWith of instr list * exn_name * instr list
 
 (** A frame is a list (stack) of instructions *)
 and frame = instr list
@@ -109,7 +111,7 @@ let mult = function
   | _ -> error "int and int expected in mult"
 
 let divi = function
-  | (MInt 0) :: (MInt _) :: _ -> error "Division_by_zero"
+  | (MInt 0) :: (MInt _) :: _ -> error "DivisionByZero"
   | (MInt x) :: (MInt y) :: s -> MInt (y / x) :: s
   | _ -> error "int and int are expected in divi"
 
@@ -177,6 +179,14 @@ let less = function
             exec_block try_block frms stck envs
           with Machine_error _ ->
             exec_block handler_block frms stck envs)
+      | ITryWith (try_block, Syntax.DivisionByZero, handler_block) ->
+        (try
+          exec_block try_block frms stck envs
+      with
+        | Machine_error "DivisionByZero" ->
+            exec_block handler_block frms stck envs
+        | exn -> raise exn
+        )
 
 (** [run frm env] executes the frame [frm] in environment [env]. *)
 let run frm env =

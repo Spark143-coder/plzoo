@@ -18,3 +18,5 @@ let rec compile {Zoo.data=e'; _} =
     | Syntax.Fun (f, x, _, _, e) -> [IClosure (f, x, compile e @ [IPopEnv])]
     | Syntax.Apply (e1, e2) -> (compile e1) @ (compile e2) @ [ICall]
     | Syntax.Try (e1, e2) -> [ITry(compile e1 ,compile e2)]
+    | Syntax.TryWith (e1,[(exn,e2)]) -> [ITryWith(compile e1, exn, compile e2)]
+    | Syntax.TryWith (_, _) -> failwith "Only single exception handler supported currently"
