@@ -43,8 +43,8 @@ and type_of ctx {Zoo.data=e; loc} =
       TArrow (ty1, ty2)
     | Apply (e1, e2) ->
       begin match type_of ctx e1 with
-	  TArrow (ty1, ty2) -> check ctx ty1 e2 ; ty2
+	TArrow (ty1, ty2) -> check ctx ty1 e2 ; ty2
 	| ty ->
-	  typing_error ~loc
+	typing_error ~loc
             "this expression is used as a function but its type is %t" (Print.ty ty)
       end

@@ -165,10 +165,10 @@ let less = function
           | [] -> error "no environment for a closure")
       | IBranch (f1, f2) ->
           let (b, stck') = pop_bool stck in
-          ((if b then f1 else f2) :: frms, stck', envs)
+          exec_block (if b then f1 else f2) frms stck' envs
       | ICall ->
           let (x, frm, env, v, stck') = pop_app stck in
-          (frm :: frms, stck', ((x,v) :: env) :: envs)
+          exec_block frm frms stck' (((x,v) :: env) :: envs)
       | IPopEnv ->
           (match envs with
           | [] -> error "no environment to pop"
